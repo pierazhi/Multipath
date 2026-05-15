@@ -565,77 +565,22 @@ def caratterizza_terreno_da_normali(normali_unitarie, baricentri):
     
     return
 
-def visualize_tif_italia(file_path, lato_pixel_vis):
+def calcola_direzione_raggio(azimuth_deg, elevazione_deg):
     """
-    Visualizza una porzione di mappa espressa in gradi geografici terrestri,
-    convertendo l'asse del grafico in chilometri reali (da 0 a N km).
+    Converte gli angoli di Azimuth ed Elevazione in un vettore 3D unitario.
+    - azimuth_deg: 0° (Asse X), 90° (Asse Y), ecc.
+    - elevazione_deg: 0° (Orizzontale), -90° (Dritto verso il basso)
     """
-    with rasterio.open(file_path) as src:
-        centro_x = src.width // 2
-        centro_y = src.height // 2
-        
-        offset_x = centro_x - (lato_pixel_vis // 2)
-        offset_y = centro_y - (lato_pixel_vis // 2)
-        
-        finestra_visiva = Window(offset_x, offset_y, lato_pixel_vis, lato_pixel_vis)
-        finestra_visiva = finestra_visiva.intersection(Window(0, 0, src.width, src.height))
-        
-        larghezza_effettiva = finestra_visiva.width
-        altezza_effettiva = finestra_visiva.height
-        
-        dem_ritagliato = src.read(1, window=finestra_visiva).astype(float)
-        dem_ritagliato = np.flipud(dem_ritagliato)
-        
-        if src.nodata is not None:
-            dem_ritagliato[dem_ritagliato == src.nodata] = np.nan
-            
-        # 1. Estrae i confini della porzione visiva in GRADI reali
-        lon_min, lat_max = src.transform * (offset_x, offset_y)
-        lon_max, lat_min = src.transform * (offset_x + larghezza_effettiva, offset_y + altezza_effettiva)
-
-        # 2. Calcola la dimensione reale in metri per grado a questa latitudine (~40.5°N)
-        lat_media = (lat_min + lat_max) / 2.0
-        metri_per_grado_lat = 111132.0
-        metri_per_grado_lon = 111320.0 * np.cos(np.radians(lat_media))
-        
-        # 3. Trasforma i gradi in estensione chilometrica totale della finestra
-        estensione_x_km = (lon_max - lon_min) * metri_per_grado_lon / 1000.0
-        estensione_y_km = (lat_max - lat_min) * metri_per_grado_lat / 1000.0
-
-        # 4. Genera gli assi che partono rigorosamente da 0.0 km fino al limite massimo della scena
-        x_km = np.linspace(0.0, estensione_x_km, dem_ritagliato.shape[1])
-        y_km = np.linspace(0.0, estensione_y_km, dem_ritagliato.shape[0])
-
-        print(f"--- 📊 VISUALIZZAZIONE CORRETTA (ITALIA) ---")
-        print(f"Finestra visualizzata: {larghezza_effettiva}x{altezza_effettiva} pixel.")
-        print(f"Dimensione reale calcolata: X = {estensione_x_km:.2f} km | Y = {estensione_y_km:.2f} km")
-
-        # 5. Rendering della mappa 2D
-        fig = go.Figure(data=go.Heatmap(
-            z=dem_ritagliato,
-            x=x_km,
-            y=y_km,
-            colorscale='Earth_r',
-            colorbar=dict(title="Elevazione (m)"),
-            hovertemplate="X: %{x:.2f} km<br>Y: %{y:.2f} km<br>Quota: %{z:.0f} m<extra></extra>"
-        ))
-
-        # Posiziona il marker al centro esatto della vista (es. a 36 km se l'asse è 72 km)
-        fig.add_trace(go.Scatter(
-            x=[estensione_x_km / 2.0], y=[estensione_y_km / 2.0], mode='markers',
-            marker=dict(size=12, color="red", line=dict(width=2, color="white")), 
-            name="Centro Vista"
-        ))
-
-        fig.update_layout(
-            title=dict(
-                text=f"Mappa 2D Italia | Scala Lineare: {estensione_x_km:.1f} x {estensione_y_km:.1f} km",
-                x=0.5
-            ),
-            xaxis=dict(title="Distanza Orizzontale (km)", scaleanchor="y", scaleratio=1),
-            yaxis=dict(title="Distanza Verticale (km)"),
-            width=750, height=700,
-            margin=dict(l=60, r=40, b=60, t=80)
-        )
-
-        fig.show()
+    # Conversione in radianti
+    azimuth_rad = np.radians(azimuth_deg)
+    elevazione_rad = np.radians(elevazione_deg)
+    
+    # Calcolo delle componenti cartesiane basate sulla trigonometria sferica
+    x = np.cos(elevazione_rad) * np.cos(azimuth_rad)
+    y = np.cos(elevazione_rad) * np.sin(azimuth_rad)
+    z = np.sin(elevazione_rad)
+    
+    vettore_direzione = np.array([x, y, z])
+    
+    # Ritorna il vettore normalizzato (unitario)
+    return vettore_direzione / np.linalg.norm(vettore_direzione)
