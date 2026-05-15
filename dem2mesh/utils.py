@@ -131,11 +131,6 @@ def read_tif(file_path):
 
         return altezza, larghezza
 
-import numpy as np
-import rasterio
-from rasterio.windows import Window
-import plotly.graph_objects as go
-
 def visualize_tif(file_path, lato_pixel_vis):
     """
     Legge e visualizza solo una porzione specificata dal centro 
