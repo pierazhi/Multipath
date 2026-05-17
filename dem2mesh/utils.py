@@ -579,3 +579,6 @@ def calcola_direzione_raggio(azimuth_deg, elevazione_deg):
     
     # Ritorna il vettore normalizzato (unitario)
     return vettore_direzione / np.linalg.norm(vettore_direzione)
+
+def cazzo(dad):
+    return
