@@ -271,6 +271,8 @@ class MultiPath:
             isotropic = self.isotropic,
             verbose = self.verbose,
             enable_profiling = self.enable_profiling,
+            pol_convention=self.pol_convention,
+            occlusion=self.occlusion,
         )
         kwargs.update(self._antenna_kwargs(self.tx_ant[i_tx], "tx"))
         kwargs.update(self._antenna_kwargs(self.rx_ant[i_rx], "rx"))

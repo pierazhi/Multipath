@@ -175,11 +175,24 @@ def _assemble_reflection_path(
         gain_tx_db           = 0.0
         gain_rx_db           = 0.0
 
+    
     fase_geo = -k * dist_tot
-    fase_tot = fase_geo % (2.0 * np.pi)
-    g_field  = 10.0 ** ((gain_tx_db + gain_rx_db) / 20.0)
-    campo    = amp * g_field * pol_factor * np.exp(1j * fase_geo)
+    fase_geo_norm = fase_geo % (2.0 * np.pi)
+
+    g_field = 10.0 ** ((gain_tx_db + gain_rx_db) / 20.0)
+
+    campo = amp * g_field * pol_factor * np.exp(1j * fase_geo)
+
     total_loss_db = fsl_db + pol_loss + refl_db - gain_tx_db - gain_rx_db
+
+    # Extra phase diagnostics
+    phase_campo_rad = np.angle(campo)
+    phase_campo_deg = np.angle(campo, deg=True)
+
+    # Sionna-style coefficient phase: remove geometric propagation phase
+    campo_no_geo = campo * np.exp(1j * k * dist_tot)
+    phase_no_geo_rad = np.angle(campo_no_geo)
+    phase_no_geo_deg = np.angle(campo_no_geo, deg=True)
 
     # Global (travel-dir) + local (came-from, true elevation) angles, TX & RX.
     # dirs[0] = departure travel, dirs[-1] = arrival travel.
@@ -197,6 +210,9 @@ def _assemble_reflection_path(
         "points":                pts.copy(),
         "distanza_totale":       dist_tot,
         "campo_complesso":       campo,
+
+        "campo_no_geo":          campo_no_geo,
+
         "fsl_db":                fsl_db,
         "pol_loss":              float(pol_loss),
         "IL_db":                 float(total_IL_and_refl_db),
@@ -205,8 +221,23 @@ def _assemble_reflection_path(
         "reflection_loss_db":    float(refl_db),
         "diffraction_loss_db":   0.0,
         "path_loss_totale_db":   total_loss_db,
-        "sfasamento_totale_rad": fase_tot,
-        "sfasamento_totale_deg": np.degrees(fase_tot),
+
+        # Old fields, kept for compatibility
+        "sfasamento_totale_rad": fase_geo_norm,
+        "sfasamento_totale_deg": np.degrees(fase_geo_norm),
+
+        # Clearer names
+        "sfasamento_geometrico_rad": fase_geo_norm,
+        "sfasamento_geometrico_deg": np.degrees(fase_geo_norm),
+
+        # Actual complex-field phase
+        "phase_campo_rad":       phase_campo_rad,
+        "phase_campo_deg":       phase_campo_deg,
+
+        # Sionna-comparable phase
+        "phase_no_geo_rad":      phase_no_geo_rad,
+        "phase_no_geo_deg":      phase_no_geo_deg,
+
         "ritardo_assoluto_ns":   (dist_tot / C_LIGHT) * 1e9,
         "aoa_direction":         aoa_dir,
         **_ang,

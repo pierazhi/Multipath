@@ -298,7 +298,8 @@ def run_sbr_image_solver(
                 f"Dist: {los_dist:.2f} m | FSL: {fsl_db:.2f} dB | "
                 f"Pol Loss: {IL_los_db:.2f} dB | "
                 f"Gain TX: {gain_tx_los:.2f} dB | Gain RX: {gain_rx_los:.2f} dB | "
-                f"Total Loss: {total_loss_los:.2f} dB"
+                f"Total Loss: {total_loss_los:.2f} dB | "
+                f"Phase geo: {fase_norm:.2f}° | "
             )
 
         results["primary_rays_captured"] = 1
@@ -347,7 +348,10 @@ def run_sbr_image_solver(
                         f"Pol Loss: {d['pol_loss']:.2f} | "
                         f"IL: {d['IL_db']:.2f} dB | "
                         f"Gain TX: {d['gain_tx_db']:.2f} dB | Gain RX: {d['gain_rx_db']:.2f} dB | "
-                        f"Total: {d['path_loss_totale_db']:.2f} dB | Fase: {d['sfasamento_totale_deg']:.2f}°"
+                        f"Total Loss: {d['path_loss_totale_db']:.2f} dB | "
+                        f"Phase geo: {d['sfasamento_geometrico_deg']:.2f}° | "
+                        f"Phase campo: {d['phase_campo_deg']:.2f}° | "
+                        f"Phase no-geo: {d['phase_no_geo_deg']:.2f}°"
                     )
                 results["nlos_paths"].append(d)
                 ray_id += 1
@@ -514,7 +518,10 @@ def run_sbr_image_solver(
                             f"Pol Loss: {d['pol_loss']:.2f} | "
                             f"IL: {d['IL_db']:.2f} dB | "
                             f"Gain TX: {d['gain_tx_db']:.2f} dB | Gain RX: {d['gain_rx_db']:.2f} dB | "
-                            f"Total: {d['path_loss_totale_db']:.2f} dB | Fase: {d['sfasamento_totale_deg']:.2f}°"
+                            f"Total Loss: {d['path_loss_totale_db']:.2f} dB | "
+                            f"Phase geo: {d['sfasamento_geometrico_deg']:.2f}° | "
+                            f"Phase campo: {d['phase_campo_deg']:.2f}° | "
+                            f"Phase no-geo: {d['phase_no_geo_deg']:.2f}°"
                         )
                     results["nlos_paths"].append(d)
                     ray_id += 1
@@ -545,6 +552,7 @@ def run_sbr_image_solver(
                     d.setdefault("membro_raggruppamento", [ray_id])
                     d.setdefault("potenza_incoerente", abs(d["campo_complesso"]) ** 2)
 
+                    
                     found_per_order[K] = found_per_order.get(K, 0) + 1
                     if verbose:
                         ray_label = "[K]" if d["has_diffracted"] else "[P]"
@@ -555,7 +563,10 @@ def run_sbr_image_solver(
                             f"Pol Loss: {d['pol_loss']:.2f} | "
                             f"IL: {d['IL_db']:.2f} dB | "
                             f"Gain TX: {d['gain_tx_db']:.2f} dB | Gain RX: {d['gain_rx_db']:.2f} dB | "
-                            f"Total: {d['path_loss_totale_db']:.2f} dB | Fase: {d['sfasamento_totale_deg']:.2f}°"
+                            f"Total Loss: {d['path_loss_totale_db']:.2f} dB | "
+                            f"Phase geo: {d['sfasamento_geometrico_deg']:.2f}° | "
+                            f"Phase campo: {d['phase_campo_deg']:.2f}° | "
+                            # f"Phase no-geo: {d['phase_no_geo_deg']:.2f}°"
                         )
                     results["nlos_paths"].append(d)
                     ray_id += 1
@@ -595,7 +606,6 @@ def run_sbr_image_solver(
             for p in results["nlos_paths"] if p["bounces"] > 0
         )
         print("-" * 60)
-        print(f"  Keller Diffraction Events Triggered : 0")
         print(f"  Raw multipath micro-rays captured   : {n_raw_multipath}")
         print(f"  Coherent multipath components at RX : {n_components}")
         print("=" * 60 + "\n")

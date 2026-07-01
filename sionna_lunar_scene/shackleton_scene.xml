@@ -1,0 +1,16 @@
+<scene version="3.0.0">
+
+    <bsdf type="radio-material" id="lunar_soil">
+        <float name="relative_permittivity" value="2.87"/>
+        <float name="conductivity" value="0.001335"/>
+        <float name="thickness" value="100"/>
+        <float name="scattering_coefficient" value="0.0"/>
+        <float name="xpd_coefficient" value="0.0"/>
+    </bsdf>
+
+    <shape type="ply" id="lunar_terrain">
+        <string name="filename" value="lunar_terrain.ply"/>
+        <ref id="lunar_soil"/>
+    </shape>
+
+</scene>

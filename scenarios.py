@@ -559,10 +559,12 @@ def choose_mesh(case):
     elif case == "canyon":
         path = meshes_dir / "simple_canyon.ply"
         mesh = trimesh.load_mesh(path)
+        mesh.invert()    
 
     elif case == "florence":
         path = meshes_dir / "florence.ply"
         mesh = trimesh.load_mesh(path)
+        # mesh.invert()    
 
     elif case == "real_lunar":
         file = tifs_dir / "LDEM_875S_20M.tif"
