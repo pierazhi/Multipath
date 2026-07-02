@@ -19,6 +19,7 @@ def _generate_candidate_sequences(
     nee_to_rx=True,
     verbose=False,
     print_hit_fraction=True, 
+    use_gpu = False,
 ):
     pos_tx = np.asarray(pos_tx, dtype=np.float64)
     pos_rx = np.asarray(pos_rx, dtype=np.float64)
@@ -52,7 +53,7 @@ def _generate_candidate_sequences(
         d = dirs[act]
 
         hit_mask, hit_pts, hit_faces, hit_dists = batch_intersect(
-        mesh, o, d, max_path_distance
+        mesh, o, d, max_path_distance, use_gpu
         )
 
         if b == 0 and verbose and print_hit_fraction:     # gated
@@ -158,6 +159,7 @@ def run_sbr_image_solver(
     # ── Polarization convention + occlusion strategy ──────────────────────
     pol_convention:                 str = "fixed",     # "fixed" | "sionna"
     occlusion:                      str = "batched",    # "serial" | "batched" (order>=2)
+    use_gpu:                        bool = False,  
 ) -> dict:
     """
     Sionna-style hybrid: SBR discovers candidate facet sequences, the image
@@ -440,7 +442,7 @@ def run_sbr_image_solver(
             all_seqs = _generate_candidate_sequences(
                 mesh, pos_tx, pos_rx, launch_dirs,
                 max_bounces=max_bounces, max_path_distance=max_path_distance,
-                nee_to_rx=nee_to_rx, verbose=verbose, print_hit_fraction=launch_mode not in ("surface", "surface_equal"),
+                nee_to_rx=nee_to_rx, verbose=verbose, print_hit_fraction=launch_mode not in ("surface", "surface_equal"), use_gpu = use_gpu
 
             )
             # Order 1 is owned by the exact vectorized pass above; only refine >=2.

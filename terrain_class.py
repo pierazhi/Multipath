@@ -52,7 +52,7 @@ class MultiPath:
                  num_rays=500_000, max_bounces = 3, launch_mode = "pyramid",
                  polarization = True, isotropic = False, verbose = True, 
                  pol_convention = "fixed", occlusion = "batched", g_max_db = 12, 
-                 hpbw_h = 30, hpbw_v = 30, enable_profiling = False):
+                 hpbw_h = 30, hpbw_v = 30, enable_profiling = False, use_gpu = False):
         self.dem_path = dem_path          # was None — this broke crop()/gen_mesh()
         self.utc_time = utc_time
         self.frame = frame
@@ -86,6 +86,7 @@ class MultiPath:
         self.pol_convention = pol_convention
         self.occlusion = occlusion
         self.enable_profiling = enable_profiling
+        self.use_gpu = use_gpu
 
     def crop(self, output_path, method, **kwargs):
         self.bounds_m = selection_to_bounds(self.dem_path, method, **kwargs)
@@ -273,6 +274,7 @@ class MultiPath:
             enable_profiling = self.enable_profiling,
             pol_convention=self.pol_convention,
             occlusion=self.occlusion,
+            use_gpu = self.use_gpu,
         )
         kwargs.update(self._antenna_kwargs(self.tx_ant[i_tx], "tx"))
         kwargs.update(self._antenna_kwargs(self.rx_ant[i_rx], "rx"))
